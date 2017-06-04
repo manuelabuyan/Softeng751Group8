@@ -1,0 +1,114 @@
+package ParaTaskSort;
+
+import pt.runtime.TaskIDGroup;
+
+public class ParaTaskSort {
+	
+	private int arraySize;
+	private int minimum;
+	private int maximum;
+	
+	private int[] array;
+	private int[] unsortedArray;
+	private int[] temp;
+	
+	public ParaTaskSort(int size,int min, int max){
+		arraySize = size;
+		minimum = min;
+		maximum = max;
+		
+		array = new int[arraySize];
+		unsortedArray = new int[arraySize];
+		temp = new int [arraySize];
+		
+		for(int i=0;i<arraySize;i++){
+			array[i] = minimum + (int)(Math.random() * maximum); 
+			unsortedArray[i] = array[i];
+		}
+	}
+	
+	private void printArray(){
+		 for (int i = 0; i < arraySize; i++) {
+	         if (i > 0) {
+	            System.out.print(", ");
+	         }
+	         System.out.print(array[i]);
+	      }
+		 System.out.println();
+	}
+	
+	public void unsortArray(){
+		for(int i=0;i<arraySize;i++){
+			array[i] = unsortedArray[i];
+		}
+	}
+	
+	public void sequentialSort(){
+		sequentialMergeSort(0, arraySize -1);
+	}
+	
+	public void parallelSort(){
+		TaskID id = paraTaskMergeSort(0, arraySize -1);
+		try {
+			id.waitTillFinished();
+		} catch (Exception e){}
+	}
+	
+	private void sequentialMergeSort(int left, int right){
+
+		if(left < right){
+			int middle = left + (right - left)/2;
+			sequentialMergeSort(left, middle);
+			sequentialMergeSort(middle+1, right);
+			merge(left,middle,right);
+		}
+		
+	}
+	
+	TASK public void paraTaskMergeSort(int left, int right){
+		
+		 if (left < right){
+			int middle = left + (right - left)/2;
+			TaskID id1 = paraTaskMergeSort(left, middle);
+			TaskID id2 = paraTaskMergeSort(middle+1, right);
+			
+			TaskIDGroup taskGroup = new TaskIDGroup(2);
+			taskGroup.add(id1);
+			taskGroup.add(id2);
+			
+			try {
+				taskGroup.waitTillFinished();
+			} catch (Exception e){}
+			
+			merge(left,middle,right);
+		}
+		
+	}
+	
+	private void merge(int left, int middle, int right){
+		for (int i=left;i<=right;i++){
+			temp[i] = array[i];
+		}
+		
+		int i = left;
+        int j = middle + 1;
+        int k = left;
+
+        while (i <= middle && j <= right) {
+            if (temp[i] <= temp[j]) {
+                array[k] = temp[i];
+                i++;
+            } else {
+                array[k] = temp[j];
+                j++;
+            }
+            k++;
+        }
+
+        while (i <= middle) {
+            array[k] = temp[i];
+            k++;
+            i++;
+        }
+	}
+}
