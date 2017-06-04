@@ -1,3 +1,4 @@
+package ParaTaskAlgorithms;
 
 import static java.lang.Math.*;
 import java.util.concurrent.atomic.AtomicInteger;

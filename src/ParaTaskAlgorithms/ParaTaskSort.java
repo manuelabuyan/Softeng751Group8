@@ -1,4 +1,4 @@
-package ParaTaskSort;//####[1]####
+package ParaTaskAlgorithms;//####[1]####
 //####[1]####
 import pt.runtime.TaskIDGroup;//####[3]####
 //####[3]####
