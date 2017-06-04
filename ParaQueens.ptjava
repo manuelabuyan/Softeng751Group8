@@ -1,0 +1,90 @@
+
+import static java.lang.Math.*;
+import java.util.concurrent.atomic.AtomicInteger;
+
+public class ParaQueens {
+
+	public static void main(String[] args) {
+		long n = 9;
+		long boundary = (long)pow(n, n);
+		//long numThreads = Runtime.getRuntime().availableProcessors();
+		long numThreads = 2;
+		long chunk = boundary/numThreads;
+		long remainder = boundary%numThreads;
+		AtomicInteger counter = new AtomicInteger(0);
+
+		TaskIDGroup g = new TaskIDGroup((int)numThreads);
+		long startTime = System.currentTimeMillis();
+		
+		
+		for (int i = 0; i < numThreads; i++){
+			g.add(checkArrangementsInPara(i*chunk, ((i+1)*chunk - 1), n, counter));
+		}
+		
+		if (remainder != 0 ) {
+			g.add(checkArrangementsInPara((boundary - remainder), (boundary - 1), n, counter));
+		}
+		
+		try {
+			g.waitTillFinished();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+		
+		long totalTime = System.currentTimeMillis() - startTime;
+		System.out.println("\nTime: " + totalTime + " milliseconds");
+		System.out.println("Number of solutions for N = " + n + ": " + counter.get());
+	
+	}
+	
+	
+	public static void checkArrangement(String s, AtomicInteger counter, long n) {
+	
+		for (int i = 0; i < s.length(); i++){
+		    char c = s.charAt(i);        
+		    for (int j = 0; j < s.length(); j++) {
+		    	if ((j != i) && ((c == s.charAt(j)) || 
+		    		(abs(i - j) == abs(Character.getNumericValue(c) - Character.getNumericValue(s.charAt(j)))))) {
+		    		//System.out.println(s + " Threat");
+		    		return;
+		    	}
+		    }
+		}
+		
+		if (s.length() == (int)n || (s.length() == (int)(n - 1) && s.indexOf('0') == -1)) {
+			System.out.println("Thread " + Thread.currentThread().getId() + " found solution: " + s);
+			counter.incrementAndGet();
+		}
+		
+	}
+	
+
+	
+	TASK public static void checkArrangementsInPara(long chunkStart, long chunkStop, long n, AtomicInteger counter) {
+		
+		for (long i = chunkStart; i < chunkStop; i++) {
+			String temp = Long.toString(i, (int)n);
+			if (temp.length() != (int)n) {
+				while(temp.length() != (int)n) {
+					temp = "0" + temp;
+				}
+			}
+			
+			checkArrangement(temp, counter, n);
+		}	
+        
+		/*try {
+    		Thread.sleep(1000);
+    	} catch (Exception e) {
+    		e.printStackTrace();
+    	}*/
+		
+		long currentThreadID = Thread.currentThread().getId();
+	    System.out.println("-- Thread "+currentThreadID+ " finished ("+ chunkStart + " - " + chunkStop + ")");
+        
+         
+    }
+	
+
+}
